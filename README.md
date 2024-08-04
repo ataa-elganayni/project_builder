@@ -1,11 +1,11 @@
 # Project Builder
 
 ## References
-# json library
+### json library
 https://json.nlohmann.me/
 https://github.com/nlohmann/json
 
-# CMake Documentation
+### CMake Documentation
 https://cmake.org/cmake/help/latest/manual/cmake.1.html
 
 ## Summary
