@@ -14,7 +14,6 @@ set (SOURCE_FILES
         builder.h
         mapper.h
         common_types.h
-        shared.h
         project_exceptions.h
         ./external/HatsDateTime.h
         ./external/ExecutionMeter.h)
