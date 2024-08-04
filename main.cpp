@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
     auto out_folder = CreateOutputFolder();
     CreateBuildFolder();
 
+    //Mapper has to be called first, obviously. We will let any exception leak and shutdown the run.
     auto mapper = ProjectMapper(std::filesystem::path{root_folder});
     mapper.Print();
 
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
 
     SaveReport(conversion_report, out_folder);
 
-    mapper.Print();
+    mapper.Print(); //Print the projects and their dependencies again to make sure conversion happened
 
     auto root = mapper.GetRootProject();
     auto builder = ProjectBuilder();

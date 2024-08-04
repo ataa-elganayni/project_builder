@@ -66,9 +66,11 @@ public:
     ProjectConverter() = default;
     ~ProjectConverter() = default;
 
+    //One improvement is to separate the processing of the conversion from the caching of last run
+    //so that we don't have to reset. But that's a topic for another day.
     nlohmann::ordered_json Convert(ProjectMapper &project_map)
     {
-        Reset();
+        Reset();    //Make sure not to add new runs to old ones
 
         auto meter = Meter<std::ratio<1, 1>>();
         for(auto &[proj_path, project] : project_map)

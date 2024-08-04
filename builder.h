@@ -14,10 +14,10 @@ private:
 
         //if(error building project)
         //{
-        //analyzer.AnalyzeResult();
-        //Generate error code and message
-        //std::cout << "Failed" << std::endl;
-        //return(error_message);
+            //analyzer.AnalyzeResult();
+            //Generate error code and message
+            //std::cout << "Failed" << std::endl;
+            //return(error_message);
         //}
 
         project->SetBuild(std::make_shared<HatsDateTime>(), "./build");
@@ -31,7 +31,7 @@ private:
         if(!project->GetBuildTime())
         {
             auto child_projects = project->GetDependencies();
-            if(child_projects.empty())
+            if(child_projects.empty())  //if leaf node, we can build
             {
                 return (true);
             }
@@ -40,11 +40,11 @@ private:
             {
                 if(!child->GetBuildTime())
                 {
-                    return (false);
+                    return (false);     //if at least one deoendency isn't built yet, just wait
                 }
             }
 
-            return (true);
+            return (true);  //Project has one or more dependency and all have been built.
         }
         return (false);
     }
@@ -54,6 +54,7 @@ public:
     //remaining projects will not be built either.
     void Build(std::shared_ptr<ProjectInfo> root_project)
     {
+        //Using a stack because we want to build the leafs first. It makes things easier.
         auto s = std::stack<std::shared_ptr<ProjectInfo>>();
         s.emplace(root_project);
 
@@ -69,6 +70,8 @@ public:
                 BuildOneProject(project);
             }
 
+            //project->GetBuildTime() will only return a valid value if the project has been built.
+            //This implementation doesn't take into account force-building a project that has been built.
             if(can_build || project->GetBuildTime())
             {
                 s.pop();

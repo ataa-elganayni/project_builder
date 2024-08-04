@@ -43,3 +43,7 @@ void ThrowIfFalse(bool condition, const std::string &source, const std::string &
         throw(ExceptionType(source, message));
     }
 }
+
+//To Do:
+    // add ProjectConverter and ProjectBuilder exception classes. Since neither class actually
+    //converts, or builds, anything, there is no need to add the exception classes.
