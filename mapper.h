@@ -2,6 +2,7 @@
 #include <stack>
 #include <map>
 #include <regex>
+#include <set>
 #include "json.hpp"
 #include "common_types.h"
 #include "project_exceptions.h"
@@ -123,10 +124,52 @@ private:
         }
     }
 
-    //Make sure that there are no circular references that hinders the build: A --> B and B --> A
-    void ValidateProjectStructure()
+    //Make sure that there are no circular references that hinders the build:
+    // directly or indirectly having a path such that A --> B and B --> A
+    void ValidateStructure()
     {
-        //if structure is invalid throw
+        auto s = std::stack<std::shared_ptr<ProjectInfo>>();
+        s.push(m_RootProject);
+
+        //Keep track of parents. std::set keeps a sorted list
+        auto parent_map = std::map<std::string, std::set<std::string>>();
+
+        while(!s.empty())
+        {
+            auto project = s.top();
+            s.pop();
+            auto proj_it = parent_map.find(project->GetProjectPath());
+            if(proj_it != parent_map.end())
+            {
+                //remember to remove the parent bookmark at the same time as popping the stack
+                parent_map.erase(proj_it);
+            }
+
+            auto child_nodes = project->GetDependencies();
+            for(auto child_node : child_nodes)
+            {
+                s.push(child_node);
+
+                auto proj_path = child_node->GetProjectPath();
+                if(parent_map.find(proj_path) == parent_map.end())  //if not found
+                {
+                    parent_map[proj_path] = std::set<std::string>();
+                    parent_map[proj_path].emplace(project->GetProjectPath());
+                }
+                else
+                {
+                    //Check if the same parent has been encountered before. This can only happen
+                    //if there is a circular path that leads back to the same parent.
+                    auto parents = parent_map[proj_path];
+                    auto it = parents.find(project->GetProjectPath());
+                    ThrowIfFalse<MapperException>(it == parents.end(),
+                                                  "ProjectMapper::BuildMap",
+                                                  "The projects have a circular reference, which is not allowed");
+
+
+                }
+            }
+        }
     }
 
     //Assume no virtual folders or symlinks that create a cycle
@@ -139,6 +182,7 @@ private:
         {
             auto folder = s.top();
             s.pop();
+
             auto folder_data = GetSubfolders(folder);
             if(folder_data.second.has_value())
             {
@@ -160,6 +204,7 @@ public:
 
         BuildMap();
         FindRootProject();
+        ValidateStructure();
     }
 
     ~ProjectMapper() = default;
