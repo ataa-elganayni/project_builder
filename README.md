@@ -118,5 +118,6 @@ As the name implies, this is the feature that takes one or more projects and con
 This feature depends on the previous features and it's main purpose is to build a project and all its dependencies. Unlike the conversion, the build stops on first error.
 
 # Design
+
 There are three main components that implement each of the three features, in addition to a few auxiliary libraries. Following, is a summary of the approach taken in this design:
 - 
