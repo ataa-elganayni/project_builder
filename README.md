@@ -125,7 +125,7 @@ As the name implies, this is the feature that takes one or more projects and con
 Conversion is implemented by ProjectConverter, which maintains two lists of successful and failed conversions. Since conversions are independent of dependency among projects, ProjectConverter operates directly on the mapper, converting each project in turn. 
 
 ### Project Builder
-This feature depends on the previous features and it's main purpose is to build a project and all its dependencies. Unlike the conversion, the build stops on first error.
+This feature depends on the previous features. It's main purpose is to build a project and all its dependencies. Unlike the conversion, the build stops on first error.
 Building the projects is handled by ProjectBuilder. Due to its dependency on the relationship among projects, ProjectBuilder accepts the root project as a parameter. Internally, ProjectBuilder uses a stack to build the leaf nodes first. For non-leaf nodes, the build process checks the status of each child project and ensures that children are built first.
 
 ### Auxiliary Libraries
@@ -139,8 +139,8 @@ If project A requires project B in order to build and B also depends on A, then 
 - Serial Execution: For the purpose of this exercise, all projects are converted, and built, serially, in the same thread. Further, the implementation, as it stands, is not thread-safe. However, the way the implementation is structured makes it relatively easy to mitigate these limitations.
 
 ## Future Improvements
-- A powerful feature of any  build system is its ability to build projects in parallel. Another feature is to be able to perform distributed build. An obvious improvement for this project is to add thread-safety and allow the build to run in parallel. Following, is a straightforrward approach:
--  Scan the projects and separate leaf projects, all of which can be built simulateneously.
--  Scan the rest of the projects and separate trees, or sub-trees, that don't share a common node. Each tree or sub-tree can be handled by a different thread.
--  Progressively employ more threads as the lower level nodes are built. For example, two sub-trees within the graph may depend on multiple common nodes. The system can, then, force the two sub-trees to wait until the common nodes are built, then assigns the sub-trees to be executed in parallel.
-- Policy-Based Conversion: 
+- A powerful feature of any  build system is its ability to build projects in parallel. Another feature is to be able to perform distributed build. An obvious improvement for this project is to add thread-safety and allow the build to run in parallel. Following, is a straightforward approach:
+  - Scan the projects and separate leaf projects, all of which can be built simultaneously.
+  - Scan the rest of the projects and separate trees, or sub-trees, that don't share a common node. Each tree or sub-tree can be handled by a different thread.
+  - Progressively employ more threads as the lower level nodes are built. For example, two sub-trees within the graph may depend on multiple common nodes. The system can, then, force the two sub-trees to wait until the common nodes are built, then assigns the sub-trees to be executed in parallel.
+- Policy-Based Conversion: The conversion process can benefit greately by introducing user-defined policies. It's easy to see that, in some cases, the steps needed to convert some projects can differ from others. For example, external dependencies indicated in the requirements of this exercise can be much simpler to implement if the conversion class can accept a policy template, which can be specialized for different cases.
