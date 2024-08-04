@@ -25,6 +25,13 @@ Project Builder is standalone tool that builds projects defined in project files
 As indicated above, the tool is a self-contained standard C++ implementation. There is no OS-specific calls or API that hinder compilation on Windows. However, the paths used in the supplied sample project files use UNIX format. In order to reuse the same sample project files, the paths would have to be changed. This a matter of changing the '/' to '\'. 
 The implementation itself relies exclusively on std::filesystem to construct folder and file name, which is compatible with Windows. Any symptoms indicating a behavior to the contrary ought to be considered a bug.
 
+## Source Code Structure
+- All newly-written code is under the root of the source code tree.
+- The bin folder includes the pre-built executable.
+- The test folder contains the sample project files.
+- Conversion reports are saved to the output folder.
+- The external folder contains the source code that already exists and not written specifically for this exercise.
+
 ## Installation
 Project Builder is a self-contained C++ project that doesn't depend on any external setup or configuration. While the tool relies on an open source library to facilitate reading json files, that library is a single-header file, which is included with the source code. The tool itself doesn't require installation. Further, compilation is only needed if the provided executable isn't compatible with the target system.
 
