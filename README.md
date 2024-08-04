@@ -13,13 +13,17 @@ https://cmake.org/cmake/help/latest/manual/cmake.1.html
 Project Builder is standalone tool that builds projects defined in project files. The primary goal of the tool is to read the folder structure containing the projects and provide support for common operations such as project conversion. This document outlines the main features and walks through the steps to install and run the tool.
 
 ## Dependencies
-#### A compiler that supports C++ 17.
-#### CMake. This tool uses standard CMakeLists. While the development environment uses CLion's build system, any environment capable of processing CMakeLists should work.
+- A compiler that supports C++ 17.
+- CMake. This tool uses standard CMakeLists. While the development environment uses CLion's build system, any environment capable of processing CMakeLists should work.
 
 ## Development Environment
-#### Mac OSX 14.5
-#### CLion 2024.1.4
-#### CMake 3.5
+- Mac OSX 14.5
+- CLion 2024.1.4
+- CMake 3.5
+
+## Windows Support
+As indicated above, the tool is a self-contained standard C++ implementation. There is no OS-specific calls or API that hinder compilation on Windows. However, the paths used in the supplied sample project files use UNIX format. In order to reuse the same sample project files, the paths would have to be changed. This a matter of changing the '/' to '\'. 
+The implementation itself relies exclusively on std::filesystem to construct folder and file name, whcih is compatible with Windows. Any symptoms indicating a behavior to the contrary ought to be considered a bug.
 
 ## Installation
 Project Builder is a self-contained C++ project that doesn't depend on any external setup or configuration. While the tool relies on an open source library to facilitate reading json files, that loibrary in a single header file, which is included with the source code. The tool itself doesn't require installation, only compilation. 
