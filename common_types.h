@@ -13,8 +13,8 @@ class ProjectInfo
 private:
     std::string m_FilePath;
     ConversionStatus m_status {ConversionStatus::NotConverted};
-    std::optional<std::shared_ptr<HatsDateTime>> m_LastBuilt;
-    std::optional<std::string> m_BuildPath;
+    std::optional<std::shared_ptr<HatsDateTime>> m_LastBuilt;   //last time the project was built
+    std::optional<std::string> m_BuildPath;                     //output path of the build process
     bool m_HasParent {false};
     std::vector<std::shared_ptr<ProjectInfo>> m_dependencies;
 
@@ -49,10 +49,12 @@ public:
     [[nodiscard]] inline bool HasParent() const {return (m_HasParent);}
     [[nodiscard]] inline std::vector<std::shared_ptr<ProjectInfo>> GetDependencies() {return (m_dependencies);}
     [[nodiscard]] inline std::string GetProjectPath() const {return (m_FilePath);}
+
     [[nodiscard]] inline std::optional<std::shared_ptr<HatsDateTime>> GetBuildTime() const
     {
         return (m_LastBuilt);
     }
+
     [[nodiscard]] inline std::optional<std::string> GetBuildPath() const {return (m_BuildPath);}
     [[nodiscard]] inline bool IsBuilt() const {return (m_BuildPath.has_value());}
     [[nodiscard]] inline bool HasDependency() const {return (!m_dependencies.empty());}

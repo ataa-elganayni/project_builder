@@ -26,9 +26,7 @@ private:
 
         for (auto const &dir_entry : std::filesystem::directory_iterator{p})
         {
-            //auto &sub_folder_path = dir_entry.path();
             auto &name = dir_entry.path();
-            //auto name = std::filesystem::absolute(sub_folder_path).string();
             if(dir_entry.is_directory())
             {
                 sub_folders.emplace_back(name);
@@ -128,7 +126,7 @@ private:
     //Make sure that there are no circular references that hinders the build: A --> B and B --> A
     void ValidateProjectStructure()
     {
-
+        //if structure is invalid throw
     }
 
     //Assume no virtual folders or symlinks that create a cycle
@@ -178,7 +176,7 @@ public:
             std::cout << *project;
             for(auto child_project : project->GetDependencies())
             {
-                std::cout << "=========" << *child_project;
+                std::cout << "========= " << *child_project;
             }
             std::cout << std::endl;
         }

@@ -19,6 +19,7 @@ private:
         //std::cout << "Failed" << std::endl;
         //return(error_message);
         //}
+
         project->SetBuild(std::make_shared<HatsDateTime>(), "./build");
         std::cout << "Completed" << std::endl;
 
@@ -60,17 +61,12 @@ public:
         while(!s.empty())
         {
             auto project = s.top();
-
             auto error = std::optional<std::string>{std::nullopt};
             auto can_build = CanBuild(project);
+
             if(can_build)
             {
-                error = BuildOneProject(project);
-                if(error)
-                {
-                    std::cout << "Build failed: " << project->GetProjectPath() << std::endl;
-                    return;
-                }
+                BuildOneProject(project);
             }
 
             if(can_build || project->GetBuildTime())

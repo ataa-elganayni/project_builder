@@ -13,6 +13,10 @@ using namespace Hats::Tools;
 class ProjectConverter
 {
 private:
+    std::vector<std::string> m_converted;
+    std::vector<std::string> m_failed;
+    nlohmann::ordered_json m_report;
+
     //ConversionAnalyzer m_analyzer;    //for future use
     std::optional<std::string> ConvertOneProject(std::shared_ptr<ProjectInfo> project)
     {
@@ -21,41 +25,41 @@ private:
 
         //if(error converting project)
         //{
-        //analyzer.AnalyzeResult();
-        //Generate error code and message
-        //std::cout << "Failed" << std::endl;
-        //return(error_message);
+            //analyzer.AnalyzeResult();
+            //Generate error code and message
+            //failed.emplace_back(project->GetProjectPath());
+            //std::cout << "Failed" << std::endl;
+            //return(error_message);
         //}
+
+        m_converted.emplace_back(project->GetProjectPath());
         project->SetConverted();
         std::cout << "Completed" << std::endl;
 
         return (std::nullopt);
     }
 
-    nlohmann::ordered_json GenerateReport(const std::vector<std::string> &converted,
-                                          const std::vector<std::string> &failed,
-                                          double elapsed) //elapsed is in milliseconds
+    nlohmann::ordered_json GenerateReport(double elapsed)
     {
         auto dt = HatsDateTime();
         auto elapsed_str = std::to_string(elapsed) + " seconds";
 
-        auto conversion_report = nlohmann::ordered_json();
-        conversion_report["Report Date"] = dt.FormatDateTime();
-        conversion_report["Executed in "] = elapsed_str;
-        conversion_report["Status"] = (failed.empty() ? "Success" : "Failed");
-        conversion_report["Project Count"] = converted.size() + failed.size();
+        m_report["Report Date"] = dt.FormatDateTime();
+        m_report["Executed in "] = elapsed_str;
+        m_report["Status"] = (m_failed.empty() ? "Success" : "Failed");
+        m_report["Project Count"] = m_converted.size() + m_failed.size();
 
-        conversion_report["Completed"] = nlohmann::ordered_json();
-        auto &completed_json = conversion_report["Completed"];
-        completed_json["Count"] = converted.size();
-        completed_json["Converted Projects"] = converted;
+        m_report["Completed"] = nlohmann::ordered_json();
+        auto &completed_json = m_report["Completed"];
+        completed_json["Count"] = m_converted.size();
+        completed_json["Converted Projects"] = m_converted;
 
-        conversion_report["Failed"] = nlohmann::ordered_json();
-        auto &failed_json = conversion_report["Failed"];
-        failed_json["Count"] = failed.size();
-        failed_json["Failed Projects"] = failed;
+        m_report["Failed"] = nlohmann::ordered_json();
+        auto &failed_json = m_report["Failed"];
+        failed_json["Count"] = m_failed.size();
+        failed_json["Failed Projects"] = m_failed;
 
-        return (conversion_report);
+        return (m_report);
     }
 
 public:
@@ -64,44 +68,36 @@ public:
 
     nlohmann::ordered_json Convert(ProjectMapper &project_map)
     {
-        auto converted = std::vector<std::string>();
-        auto failed = std::vector<std::string>();
+        Reset();
 
         auto meter = Meter<std::ratio<1, 1>>();
         for(auto &[proj_path, project] : project_map)
         {
             if(project->Status() == ConversionStatus::NotConverted)
             {
-                auto error = ConvertOneProject(project);
-                if(error)
-                {
-                    failed.emplace_back(project->GetProjectPath());
-                }
-                else
-                {
-                    converted.emplace_back(project->GetProjectPath());
-                }
+                ConvertOneProject(project);
             }
 
             for(auto child_project : project->GetDependencies())
             {
                 if(child_project->Status() == ConversionStatus::NotConverted)
                 {
-                    auto error = ConvertOneProject(child_project);
-                    if (error)
-                    {
-                        failed.emplace_back(project->GetProjectPath());
-                    }
-                    else
-                    {
-                        converted.emplace_back(project->GetProjectPath());
-                    }
+                    ConvertOneProject(child_project);
                 }
             }
         }
 
         auto elapsed_time = meter.ElapsedTime();
         std::cout << "Conversion completed. Conversion report has been saved to ./output" << std::endl;
-        return (GenerateReport(converted, failed, elapsed_time));
+        return (GenerateReport(elapsed_time));
+    }
+
+    [[nodiscard]] nlohmann::ordered_json GetLastReport() const {return (m_report);}
+
+    void Reset()
+    {
+        m_converted.clear();
+        m_failed.clear();
+        m_report.clear();
     }
 };

@@ -1,0 +1,21 @@
+{
+    "Report Date": "08-03-2024 22:25:54:08s",
+    "Executed in ": "12.016546 seconds",
+    "Status": "Success",
+    "Project Count": 6,
+    "Completed": {
+        "Count": 6,
+        "Converted Projects": [
+            "/Users/ataa/git/project_builder/test/root.proj",
+            "/Users/ataa/git/project_builder/test/root.proj",
+            "/Users/ataa/git/project_builder/test/root.proj",
+            "/Users/ataa/git/project_builder/test/sub_folder1/sb1.proj",
+            "/Users/ataa/git/project_builder/test/sub_folder1/sb1.proj",
+            "/Users/ataa/git/project_builder/test/sub_folder2/sub_folder2_1/sb2_1.proj"
+        ]
+    },
+    "Failed": {
+        "Count": 0,
+        "Failed Projects": []
+    }
+}

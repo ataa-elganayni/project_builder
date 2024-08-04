@@ -12,6 +12,10 @@
         {
             "Project Name": "sb3_1",
             "Relative Path": "sub_folder3/sub_folder3_1/sb3_1.proj"
+        },
+        {
+            "Project Name": "sb3",
+            "Relative Path": "sub_folder3/sb3.proj"
         }
     ],
     "External References": [
