@@ -39,8 +39,29 @@ Step 1: clone the repository:
 ```
 git clone https://github.com/ataa-elganayni/project_builder.git
 ```
-Step 2: build the project using a CMake. See the References section.
-Step 3: Use the provided Mac OS executable, which can be found in the ./bin folder
+Step 2: Install cmake, if not already installed:
+```
+On Mac:
+ataa@Hats-Dev-MackBook projects % brew install cmake
+
+On Windows:
+https://cmake.org/download/
+```
+Step 3: Go to the root of the cloned sources and create build folder:
+```
+ataa@Hats-Dev-MackBook project_builder % mkdir build
+ataa@Hats-Dev-MackBook project_builder % cd build
+```
+Step 4: Compile the project:
+```
+ataa@Hats-Dev-MackBook build % cmake ..
+```
+Step 5: Generate the executable:
+```
+build % cmake --build .
+```
+The build folder should now have an executable called project_builder
+Alternatively, use the provided Mac OS executable, which can be found in the ./bin folder, if it's compatible with the target system.
 
 ## Running the Tool
 Navigate to the folder where project_builder executable is located. Run the executable with the full path of the projects' root folder as the only parameter.
