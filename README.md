@@ -107,17 +107,35 @@ Build completed in 30.0187 seconds
 ataa@Hats-Dev-MackBook cmake-build-release % 
 ```
 
-## Features
+## The Mechanics of the Build Process
+
+Given the graph nature of the structure and the fact that multiple projects can depend on the same child project, the system is designed to eliminate the need to build the same project more than once. That is, given two projects A and B that depend on C, the following two conditions always hold true:
+- C is always built before A and B.
+- C is only built once.
+
+This is achieved by pointing both A and B to the same object C. Put differently, the same object C appears twice in both A's and B's dependency lists. There are serious implications to this design that are discussed under Limitations and Future Improvement sections. For the purpose of understanding that the mechanics of the execution, suffice it to say that this structure facilitates fast execution, even for relatively large number of projects, and is keeps the implementation simpler and easier to maintain.
+
+## Features and Components
 ### Project Mapping
 The is the main feature that scans and builds a full map of the projects and their dependencies. This components also acts as cache in which the projects can be looked up, which eliminates the need to continuously iterate over the projects' objects.
+Mapping is implemented by the ProjectConverter class. ProjectConverter takes the path to the root projects folder and builds two data structures: an std::map that acts as a cache of projects and a graph of projects, which reflects the dependency map. ProjectConverter also acts as an iterator over the loaded projects, which facilitates conversion and building. Finally, ProjectConverter performs checks to ensure all projects paths are valid and that the graph is valid and doesn't have circular references.
 
 ### Project Conversion
 As the name implies, this is the feature that takes one or more projects and converts each one in turn. Project conversion processes all projects, logging errors as they encountered, and produces a conversion report. Conversion reports are in json.
+Conversion is implemented by ProjectConverter, which maintains two lists of successfull and failed conversions. Since conversions are independent of dependency among projects, ProjectConverter operates directly on the mapper, converting each project in turn. 
 
 ### Project Builder
 This feature depends on the previous features and it's main purpose is to build a project and all its dependencies. Unlike the conversion, the build stops on first error.
+Building the projects is handled by ProjectBuilder. Due to its dependency on the relationship among projects, ProjectBuilder accepts the root project as a parameter. Internally, ProjectBuilder uses a stack to build the leaf nodes first. For non-leaf nodes, the build process checks the status of each child project and ensures that children are built first.
 
-# Design
+### Auxiliary Libraries
+## Constraints
+circular dependency
 
-There are three main components that implement each of the three features, in addition to a few auxiliary libraries. Following, is a summary of the approach taken in this design:
-- 
+## Limitations
+external dependency support
+parallel execution --> cache, shared_ptr, thread safety
+
+## Future Improvements
+Parallel execution and distributed build
+policy-based build and conversion. 
