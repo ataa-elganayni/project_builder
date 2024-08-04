@@ -1,0 +1,17 @@
+{
+    "Comment 1": "References are dependecies within the same root folder of the the project.",
+    "Comment 2": "External references dependecies outside the root folder of the the project and may not belong to the same solution.",
+    
+    "Project Name": "sb3_1.proj",
+    "Path": "sub_folder3/sub_folder3_1/sb3_1.proj",
+    "References": [
+        {
+            "Project Name": "sb_2_1.proj",
+            "Relative Path": "sub_folder2/sub_folder2_1/sb2_1.proj"
+        }
+    ],
+    "External References": [
+        {
+        }
+    ]
+}

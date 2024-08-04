@@ -2,6 +2,7 @@
 #include <stack>
 #include <map>
 #include <regex>
+#include "json.hpp"
 #include "common_types.h"
 #include "project_exceptions.h"
 
@@ -9,8 +10,9 @@ class ProjectMapper
 {
 private:
     using FolderInfoType = std::pair<std::vector<std::string>, std::optional<std::string>>;
+    using CacheIteratorType = std::map<std::string, std::shared_ptr<ProjectInfo>>::iterator;
 
-    std::string m_RootFolder;
+    std::filesystem::path m_RootFolderPath;
     std::map<std::string, std::shared_ptr<ProjectInfo>> m_ProjectCache;
     std::shared_ptr<ProjectInfo> m_RootProject {nullptr};
 
@@ -24,15 +26,16 @@ private:
 
         for (auto const &dir_entry : std::filesystem::directory_iterator{p})
         {
-            auto &sub_folder_path = dir_entry.path();
-            auto name = sub_folder_path.string();
+            //auto &sub_folder_path = dir_entry.path();
+            auto &name = dir_entry.path();
+            //auto name = std::filesystem::absolute(sub_folder_path).string();
             if(dir_entry.is_directory())
             {
                 sub_folders.emplace_back(name);
             }
             else if(dir_entry.is_regular_file())
             {
-                if (std::regex_match(name, file_pattern))
+                if (std::regex_match(name.string(), file_pattern))
                 {
                     ThrowIfFalse<MapperException>(!project_file,
                                                   "ProjectMapper::GetSubfolders",
@@ -47,6 +50,24 @@ private:
 
     std::vector<std::string> Load(const std::string &proj_file)
     {
+        ThrowIfFalse<MapperException>(std::filesystem::exists(proj_file),
+                                      "ProjectMapper::Load",
+                                      std::string("Invalid project file: ") + proj_file);
+
+        auto dependencies = std::vector<std::string>();
+
+        auto s = std::ifstream(proj_file);
+        auto project_config = nlohmann::json::parse(s);
+        for(auto &reference : project_config["References"])
+        {
+            auto absolute_path = m_RootFolderPath / reference["Relative Path"];
+            dependencies.emplace_back(absolute_path);
+        }
+        return (dependencies);
+    }
+
+    std::vector<std::string> LoadExternalDependency(const std::string &proj_file)
+    {
         auto dependencies = std::vector<std::string>();
         return (dependencies);
     }
@@ -60,19 +81,19 @@ private:
         //  dependency, both point to the same C, hence, the shared_ptr.
     void UpdateCache(const std::string &file_path)
     {
-        auto parent_project = std::shared_ptr<ProjectInfo> {nullptr};
+        auto project_info = std::shared_ptr<ProjectInfo> {nullptr};
 
         if(m_ProjectCache.find(file_path) == m_ProjectCache.end())
         {
-            parent_project = std::make_shared<ProjectInfo>(file_path);
-            m_ProjectCache[file_path] = parent_project;
+            project_info = std::make_shared<ProjectInfo>(file_path);
+            m_ProjectCache[file_path] = project_info;
         }
         else
         {
-            parent_project = m_ProjectCache[file_path];
+            project_info = m_ProjectCache[file_path];
         }
 
-        if(!parent_project->HasDependency())
+        if(!project_info->HasDependency())
         {
             auto dependency_files = Load(file_path);
             for (auto &dependency: dependency_files)
@@ -80,13 +101,13 @@ private:
                 if (m_ProjectCache.find(dependency) == m_ProjectCache.end())
                 {
                     auto child_project = std::make_shared<ProjectInfo>(dependency,
-                                                                                            parent_project);
-                    parent_project->AddDependency(child_project);
-                    m_ProjectCache[file_path] = child_project;
+                                                                                            true);
+                    project_info->AddDependency(child_project);
+                    m_ProjectCache[dependency] = child_project;
                 }
                 else
                 {
-                    parent_project->AddDependency(m_ProjectCache[dependency]);
+                    project_info->AddDependency(m_ProjectCache[dependency]);
                 }
             }
         }
@@ -94,9 +115,9 @@ private:
 
     void FindRootProject()
     {
-        for(auto &[fname, project] : m_ProjectCache)
+        for(auto &[file_name, project] : m_ProjectCache)
         {
-            if(project->GetParent() == nullptr)
+            if(!project->HasParent())
             {
                 m_RootProject = project;
                 return;
@@ -104,25 +125,17 @@ private:
         }
     }
 
-public:
-    explicit ProjectMapper(const std::string &root_folder) :
-                                                    m_RootFolder(root_folder)
+    //Make sure that there are no circular references that hinders the build: A --> B and B --> A
+    void ValidateProjectStructure()
     {
-        ThrowIfFalse<MapperException>(std::filesystem::exists(root_folder),
-                                      "ProjectMapper::ProjectMapper",
-                                      "Root folder not found");
 
-        BuildMap();
-        FindRootProject();
     }
-
-    ~ProjectMapper() = default;
 
     //Assume no virtual folders or symlinks that create a cycle
     void BuildMap()
     {
         auto s = std::stack<std::string>();
-        s.push(m_RootFolder);
+        s.push(m_RootFolderPath);
 
         while(!s.empty())
         {
@@ -138,6 +151,47 @@ public:
                 s.push(f);
             }
         }
+    }
+
+public:
+    explicit ProjectMapper(const std::string &root_folder) : m_RootFolderPath(root_folder)
+    {
+        ThrowIfFalse<MapperException>(std::filesystem::exists(root_folder),
+                                      "ProjectMapper::ProjectMapper",
+                                      "Root folder not found");
+
+        BuildMap();
+        FindRootProject();
+    }
+
+    ~ProjectMapper() = default;
+
+    inline std::shared_ptr<ProjectInfo> GetRootProject()
+    {
+        return (m_RootProject);
+    }
+
+    void Print()
+    {
+        for(auto &[proj_path, project] : m_ProjectCache)
+        {
+            std::cout << *project;
+            for(auto child_project : project->GetDependencies())
+            {
+                std::cout << "=========" << *child_project;
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    CacheIteratorType begin()
+    {
+        return(m_ProjectCache.begin());
+    }
+
+    CacheIteratorType end()
+    {
+        return(m_ProjectCache.end());
     }
 };
 

@@ -2,14 +2,20 @@
 #include <string>
 #include <fstream>
 #include <optional>
+#include "HatsDateTime.h"
+
+using namespace Hats::Tools;
+
+enum class ConversionStatus {NotConverted, Converted};
 
 class ProjectInfo
 {
 private:
     std::string m_FilePath;
-    std::optional<int64_t> m_LastBuilt;
+    ConversionStatus m_status {ConversionStatus::NotConverted};
+    std::optional<std::shared_ptr<HatsDateTime>> m_LastBuilt;
     std::optional<std::string> m_BuildPath;
-    std::shared_ptr<ProjectInfo> m_ParentProject {nullptr};
+    bool m_HasParent {false};
     std::vector<std::shared_ptr<ProjectInfo>> m_dependencies;
 
 public:
@@ -18,16 +24,17 @@ public:
 
     }
 
-    ProjectInfo(const std::string &file_path, std::shared_ptr<ProjectInfo> parent) :
-                                                                        m_FilePath(file_path),
-                                                                        m_ParentProject(parent)
+    ProjectInfo(const std::string &file_path, bool has_parent) : m_FilePath(file_path),
+                                                                 m_HasParent(has_parent)
     {
 
     }
 
     ~ProjectInfo() = default;
 
-    void SetBuild(int64_t build_time, std::string &build_path)
+    void SetConverted() {m_status = ConversionStatus::Converted;}
+
+    void SetBuild(std::shared_ptr<HatsDateTime> build_time, const std::string &build_path)
     {
         m_LastBuilt = build_time;
         m_BuildPath = build_path;
@@ -38,10 +45,14 @@ public:
         m_dependencies.emplace_back(project);
     }
 
-    [[nodiscard]] inline std::shared_ptr<ProjectInfo> GetParent() {return (m_ParentProject);}
+    [[nodiscard]] inline ConversionStatus Status() const {return (m_status);}
+    [[nodiscard]] inline bool HasParent() const {return (m_HasParent);}
     [[nodiscard]] inline std::vector<std::shared_ptr<ProjectInfo>> GetDependencies() {return (m_dependencies);}
     [[nodiscard]] inline std::string GetProjectPath() const {return (m_FilePath);}
-    [[nodiscard]] inline std::optional<int64_t> GetBuildTime() const {return (m_LastBuilt);}
+    [[nodiscard]] inline std::optional<std::shared_ptr<HatsDateTime>> GetBuildTime() const
+    {
+        return (m_LastBuilt);
+    }
     [[nodiscard]] inline std::optional<std::string> GetBuildPath() const {return (m_BuildPath);}
     [[nodiscard]] inline bool IsBuilt() const {return (m_BuildPath.has_value());}
     [[nodiscard]] inline bool HasDependency() const {return (!m_dependencies.empty());}
@@ -60,3 +71,13 @@ inline bool operator <(const ProjectInfo& lhs, const ProjectInfo& rhs)
 inline bool operator >(const ProjectInfo &lhs, const ProjectInfo &rhs) { return(rhs < lhs);}
 inline bool operator >=(const ProjectInfo &lhs, const ProjectInfo &rhs) {return(!(rhs > lhs));}
 inline bool operator <=(const ProjectInfo &lhs, const ProjectInfo &rhs) {return(!(rhs < lhs));}
+
+inline std::ostream &operator <<(std::ostream &os, const ProjectInfo &project_info)
+{
+    auto p = std::filesystem::path(project_info.GetProjectPath());
+    auto status_str = (project_info.Status() == ConversionStatus::Converted ?
+                                    "Converted" : "Not Converted");
+
+    os << "Project: " << p.filename() << " -- " << status_str << std::endl;
+    return (os);
+}
