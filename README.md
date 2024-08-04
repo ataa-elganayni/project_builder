@@ -33,6 +33,7 @@ Step 1: clone the repository:
 git clone https://github.com/ataa-elganayni/project_builder.git
 ```
 Step 2: build the project using a CMake. See the References section.
+Step 3: Use the provided Mac executables that can be found in the ./bin folder
 
 ## Running the Tool
 Navigate to the folder where project_builder executable is located. Run the executable with the full path of the projects' root folder as the only parameter.
@@ -105,3 +106,17 @@ Completed
 Build completed in 30.0187 seconds
 ataa@Hats-Dev-MackBook cmake-build-release % 
 ```
+
+## Features
+### Project Mapping
+The is the main feature that scans and builds a full map of the projects and their dependencies. This components also acts as cache in which the projects can be looked up, which eliminates the need to continuously iterate over the projects' objects.
+
+### Project Conversion
+As the name implies, this is the feature that takes one or more projects and converts each one in turn. Project conversion processes all projects, logging errors as they encountered, and produces a conversion report. Conversion reports are in json.
+
+### Project Builder
+This feature depends on the previous features and it's main purpose is to build a project and all its dependencies. Unlike the conversion, the build stops on first error.
+
+# Design
+There are three main components that implement each of the three features, in addition to a few auxiliary libraries. Following, is a summary of the approach taken in this design:
+- 
