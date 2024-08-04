@@ -1,17 +1,22 @@
 # Project Builder
 
 ## References
+
 ### json library
+
 https://json.nlohmann.me/
 https://github.com/nlohmann/json
 
 ### CMake Documentation
+
 https://cmake.org/cmake/help/latest/manual/cmake.1.html
 
 ## Summary
+
 Project Builder is standalone tool that builds projects defined in project files. The primary goal of the tool is to read the folder structure containing the projects and provide support for common operations such as project conversion. This document outlines the main features and walks through the steps to install and run the tool.
 
 ## Dependencies
+
 ### A compiler that supports C++ 17.
 ### CMake. This tool uses standard CMakeLists. While the development environment uses CLion's build system, any environment capable of processing CMakeLists should work.
 
