@@ -17,7 +17,7 @@ Project Builder is a standalone tool that builds projects defined in project fil
 - CMake. This tool uses standard CMakeLists. While the development environment uses CLion's build system, any environment capable of processing CMakeLists should work.
 
 ## Development Environment
-- Mac OSX 14.5
+- Mac OSX 14.5 
 - CLion 2024.1.4
 - CMake 3.5
 
